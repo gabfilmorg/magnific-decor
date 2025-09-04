@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🎄 Magnific Decor iniciado!');
     setupNavigation();
     setupHomeCards();
+    setupScrollEffect();
 });
 
 // Configurar navegação
@@ -211,4 +212,34 @@ function showEmptyState(gallery, category) {
         <p>¡Nuevos productos de la categoría ${category} serán agregados pronto!</p>
     `;
     gallery.appendChild(emptyState);
+}
+
+// Configurar efeito de scroll para minimizar header
+function setupScrollEffect() {
+    const header = document.querySelector('.header');
+    let lastScrollTop = 0;
+    let ticking = false;
+    
+    function updateHeader() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 100) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+        
+        lastScrollTop = scrollTop;
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateHeader);
+            ticking = true;
+        }
+    }
+    
+    window.addEventListener('scroll', requestTick, { passive: true });
+    console.log('✅ Efeito de scroll configurado!');
 }

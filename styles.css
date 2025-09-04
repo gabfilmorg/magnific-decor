@@ -74,6 +74,14 @@ body::before {
     z-index: 100;
     backdrop-filter: blur(15px);
     box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s ease;
+}
+
+/* Header minimizado durante scroll */
+.header.scrolled {
+    padding: 5px 0;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    border-bottom-width: 2px;
 }
 
 .header .container {
@@ -84,6 +92,13 @@ body::before {
     flex-wrap: wrap;
     gap: 30px;
     flex-direction: column;
+    transition: all 0.4s ease;
+}
+
+/* Container do header quando minimizado */
+.header.scrolled .container {
+    padding: 10px 20px;
+    gap: 15px;
 }
 
 /* Logo */
@@ -97,7 +112,7 @@ body::before {
 .logo-img {
     height: 80px;
     width: auto;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.4));
 }
 
@@ -105,8 +120,14 @@ body::before {
     max-height: 80px;
 }
 
-.logo-img-2 {
-    max-height: 70px;
+/* Logos minimizados durante scroll */
+.header.scrolled .logo-img {
+    height: 50px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+.header.scrolled .logo-img-1 {
+    max-height: 50px;
 }
 
 .logo:hover .logo-img {
@@ -134,10 +155,17 @@ body::before {
     text-decoration: none;
     font-weight: 500;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     cursor: pointer;
     backdrop-filter: blur(10px);
     box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+}
+
+/* Botões de navegação minimizados durante scroll */
+.header.scrolled .nav-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    gap: 6px;
 }
 
 .nav-btn:hover {
@@ -625,9 +653,6 @@ body::before {
         max-height: 60px;
     }
     
-    .logo-img-2 {
-        max-height: 55px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -647,9 +672,6 @@ body::before {
         max-height: 50px;
     }
     
-    .logo-img-2 {
-        max-height: 45px;
-    }
     
     .category-card {
         padding: 20px 15px;
