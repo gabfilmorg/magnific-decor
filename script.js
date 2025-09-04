@@ -136,7 +136,7 @@ function showSection(category) {
     }
 }
 
-// Carregar imagens da categoria
+// Carregar imagens da categoria com carregamento progressivo
 function loadCategoryImages(category) {
     const categoryData = categories[category];
     if (!categoryData) {
@@ -157,25 +157,55 @@ function loadCategoryImages(category) {
         return;
     }
     
-    // Carregar imagens com caminho correto
-    categoryData.images.forEach((imageName, index) => {
-        // Caminho otimizado para deploy
-        const imagePath = `imagens/${categoryData.folder}/${imageName}`;
-        
-        createImageItem(gallery, imagePath, index + 1, category);
-    });
+    // Carregamento progressivo para melhor performance no mobile
+    const isMobile = window.innerWidth <= 768;
+    const batchSize = isMobile ? 3 : 5; // Carregar menos imagens por vez no mobile
     
-    console.log(`✅ ${categoryData.images.length} imagens carregadas para ${category}`);
+    function loadImageBatch(startIndex) {
+        const endIndex = Math.min(startIndex + batchSize, categoryData.images.length);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            const imageName = categoryData.images[i];
+            const imagePath = `imagens/${categoryData.folder}/${imageName}`;
+            createImageItem(gallery, imagePath, i + 1, category);
+        }
+        
+        // Se ainda há imagens para carregar, carrega o próximo lote após um delay
+        if (endIndex < categoryData.images.length) {
+            setTimeout(() => {
+                loadImageBatch(endIndex);
+            }, isMobile ? 500 : 200); // Delay maior no mobile
+        } else {
+            console.log(`✅ ${categoryData.images.length} imagens carregadas para ${category}`);
+        }
+    }
+    
+    // Iniciar carregamento do primeiro lote
+    loadImageBatch(0);
 }
 
-// Criar item de imagem
+// Criar item de imagem com otimização para mobile
 function createImageItem(gallery, imagePath, number, category) {
     const imageItem = document.createElement('div');
-    imageItem.className = 'image-item';
+    imageItem.className = 'image-item loading';
+    
+    // Criar placeholder de carregamento
+    const loadingPlaceholder = document.createElement('div');
+    loadingPlaceholder.className = 'image-loading-placeholder';
+    loadingPlaceholder.innerHTML = `
+        <div class="loading-spinner"></div>
+        <p>Cargando imagen ${number}...</p>
+    `;
+    imageItem.appendChild(loadingPlaceholder);
     
     const img = document.createElement('img');
     img.alt = `${category} - Imagem ${number}`;
     img.loading = 'lazy';
+    img.decoding = 'async';
+    img.style.display = 'none';
+    
+    // Otimização para mobile: adicionar sizes para responsive images
+    img.sizes = '(max-width: 480px) 100vw, (max-width: 768px) 90vw, 700px';
     
     // Caminho otimizado para deploy
     img.src = imagePath;
@@ -183,12 +213,13 @@ function createImageItem(gallery, imagePath, number, category) {
     // Tratar erro de carregamento
     img.onerror = function() {
         console.log(`❌ Erro ao carregar: ${imagePath}`);
-        // Mostrar placeholder en caso de error
+        imageItem.classList.remove('loading');
+        imageItem.classList.add('error');
         imageItem.innerHTML = `
-            <div class="image-placeholder">
-                <i class="fas fa-image"></i>
-                <p>Imagen ${number}</p>
-                <small>Cargando...</small>
+            <div class="image-placeholder error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error al cargar imagen ${number}</p>
+                <small>Intenta recargar la página</small>
             </div>
         `;
     };
@@ -196,6 +227,17 @@ function createImageItem(gallery, imagePath, number, category) {
     // Tratar sucesso no carregamento
     img.onload = function() {
         console.log(`✅ Imagem carregada: ${imagePath}`);
+        imageItem.classList.remove('loading');
+        imageItem.classList.add('loaded');
+        loadingPlaceholder.remove();
+        img.style.display = 'block';
+        
+        // Adicionar fade-in suave
+        img.style.opacity = '0';
+        img.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            img.style.opacity = '1';
+        }, 50);
     };
     
     imageItem.appendChild(img);
