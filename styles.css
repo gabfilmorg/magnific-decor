@@ -623,11 +623,18 @@ body::before {
     }
     
     .welcome h2 {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
+        line-height: 1.2;
     }
     
     .welcome .subtitle {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .welcome p {
+        font-size: 0.95rem;
+        line-height: 1.4;
     }
     
     .category-grid {
@@ -662,6 +669,23 @@ body::before {
     
     .nav-btn {
         padding: 8px 10px;
+    }
+    
+    .welcome h2 {
+        font-size: 1.5rem;
+        line-height: 1.1;
+        margin-bottom: 10px;
+    }
+    
+    .welcome .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    
+    .welcome p {
+        font-size: 0.85rem;
+        line-height: 1.3;
+        padding: 0 5px;
     }
     
     .logo-img {

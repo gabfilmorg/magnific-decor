@@ -217,19 +217,24 @@ function showEmptyState(gallery, category) {
 // Configurar efeito de scroll para minimizar header
 function setupScrollEffect() {
     const header = document.querySelector('.header');
-    let lastScrollTop = 0;
     let ticking = false;
     
     function updateHeader() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const bodyScrollTop = document.body.scrollTop || 0;
+        const maxScrollTop = Math.max(scrollTop, bodyScrollTop);
         
-        if (scrollTop > 100) {
+        // Verifica se estamos em uma seção que não seja home
+        const currentSection = document.querySelector('.section.active');
+        const isHomeSection = currentSection && currentSection.id === 'home';
+        
+        // Se não estamos na home OU se o scroll é maior que 50px, minimiza
+        if (!isHomeSection || maxScrollTop > 50) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
         
-        lastScrollTop = scrollTop;
         ticking = false;
     }
     
@@ -240,6 +245,17 @@ function setupScrollEffect() {
         }
     }
     
+    // Adiciona listeners para diferentes tipos de scroll
     window.addEventListener('scroll', requestTick, { passive: true });
-    console.log('✅ Efeito de scroll configurado!');
+    document.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Também verifica quando muda de seção
+    const navButtons = document.querySelectorAll('.nav-btn, .category-card');
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setTimeout(updateHeader, 100); // Pequeno delay para garantir que a seção mudou
+        });
+    });
+    
+    console.log('✅ Efeito de scroll configurado com detecção aprimorada!');
 }
