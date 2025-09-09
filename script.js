@@ -150,17 +150,10 @@ function loadCategoryImages(category) {
         return;
     }
     
-    // Criar imagens existentes com fallback para diferentes formatos
+    // Criar apenas as imagens existentes
     for (let i = 0; i < categoryData.images.length; i++) {
         const imageName = categoryData.images[i];
         createImageItemWithFallback(gallery, categoryData.folder, imageName, i + 1);
-    }
-    
-    // Adicionar slots vazios para futuras imagens (5 slots extras)
-    const extraSlots = 5;
-    for (let i = 0; i < extraSlots; i++) {
-        const slotNumber = categoryData.images.length + i + 1;
-        createEmptySlot(gallery, slotNumber, category);
     }
 }
 
@@ -234,13 +227,6 @@ function createImageItemWithFallback(gallery, folderName, imageName, number) {
     tryNextPath();
 }
 
-// CRIAR SLOT VAZIO PARA FUTURAS IMAGENS
-function createEmptySlot(gallery, number, category) {
-    const div = document.createElement('div');
-    div.className = 'image-item empty-slot';
-    div.innerHTML = '<div style="padding:40px 20px;text-align:center;background:rgba(255,255,255,0.1);color:#D4AF37;border-radius:10px;border:2px dashed #D4AF37;min-height:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;"><i class="fas fa-plus" style="font-size:2rem;margin-bottom:10px;opacity:0.7;"></i><p style="margin:5px 0;font-size:1rem;opacity:0.8;">Slot ' + number + '</p><small style="opacity:0.6;">Próxima imagen</small></div>';
-    gallery.appendChild(div);
-}
 
 function showEmptyState(gallery, category) {
     const div = document.createElement('div');
