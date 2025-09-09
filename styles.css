@@ -843,3 +843,47 @@ body::before {
         max-height: 70vh;
     }
 }
+
+/* Estilos para slots vazios */
+.image-item.empty-slot {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.image-item.empty-slot:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+}
+
+.empty-slot .fas.fa-plus {
+    transition: all 0.3s ease;
+}
+
+.empty-slot:hover .fas.fa-plus {
+    transform: scale(1.2) rotate(90deg);
+    color: var(--metallic-gold) !important;
+}
+
+/* Responsivo para slots vazios */
+@media (max-width: 768px) {
+    .image-item.empty-slot div {
+        padding: 30px 15px !important;
+        min-height: 150px !important;
+    }
+    
+    .empty-slot .fas.fa-plus {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .image-item.empty-slot div {
+        padding: 20px 10px !important;
+        min-height: 120px !important;
+    }
+    
+    .empty-slot .fas.fa-plus {
+        font-size: 1.2rem !important;
+    }
+}
