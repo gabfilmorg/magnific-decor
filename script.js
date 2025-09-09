@@ -71,14 +71,6 @@ let currentCategory = 'home';
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎄 Magnific Decor iniciado!');
-    console.log('📁 Verificando estrutura de pastas...');
-    
-    // Log da estrutura esperada
-    Object.keys(categories).forEach(key => {
-        const cat = categories[key];
-        console.log(`📂 ${key}: pasta="${cat.folder}", imagens=${cat.images.length}`);
-    });
-    
     setupNavigation();
     setupHomeCards();
     setupScrollEffect();
@@ -144,19 +136,13 @@ function showSection(category) {
     }
 }
 
-// Carregar imagens da categoria com carregamento progressivo
+// Carregar imagens da categoria - VERSÃO SIMPLIFICADA
 function loadCategoryImages(category) {
-    console.log(`🎯 Iniciando carregamento para categoria: ${category}`);
-    
     const categoryData = categories[category];
     if (!categoryData) {
         console.error(`❌ Categoria não encontrada: ${category}`);
-        console.error(`📋 Categorias disponíveis:`, Object.keys(categories));
         return;
     }
-    
-    console.log(`📁 Pasta da categoria: ${categoryData.folder}`);
-    console.log(`🖼️ Número de imagens: ${categoryData.images.length}`);
     
     const gallery = document.getElementById(`${category}-gallery`);
     if (!gallery) {
@@ -167,147 +153,59 @@ function loadCategoryImages(category) {
     gallery.innerHTML = '';
     
     if (categoryData.images.length === 0) {
-        console.log(`⚠️ Categoria ${category} não tem imagens - mostrando estado vazio`);
         showEmptyState(gallery, category);
         return;
     }
     
-    console.log(`🚀 Iniciando carregamento de ${categoryData.images.length} imagens para ${category}`);
-    
-    // Carregamento progressivo para melhor performance no mobile
-    const isMobile = window.innerWidth <= 768;
-    const batchSize = isMobile ? 3 : 5; // Carregar menos imagens por vez no mobile
-    
-    function loadImageBatch(startIndex) {
-        const endIndex = Math.min(startIndex + batchSize, categoryData.images.length);
-        
-        for (let i = startIndex; i < endIndex; i++) {
-            const imageName = categoryData.images[i];
-            const imagePath = `imagens/${categoryData.folder}/${imageName}`;
-            console.log(`🔄 Carregando imagem ${i + 1}/${categoryData.images.length}: ${imagePath}`);
-            
-            // Testar se a imagem existe antes de criar o item
-            testImageExists(imagePath).then(exists => {
-                if (exists) {
-                    console.log(`✅ Imagem encontrada: ${imagePath}`);
-                    createImageItem(gallery, imagePath, i + 1, category, categoryData);
-                } else {
-                    console.warn(`⚠️ Imagem não encontrada: ${imagePath}`);
-                    createErrorItem(gallery, imagePath, i + 1, category, `Archivo no encontrado: ${imageName}`);
-                }
-            });
-        }
-        
-        // Se ainda há imagens para carregar, carrega o próximo lote após um delay
-        if (endIndex < categoryData.images.length) {
-            setTimeout(() => {
-                loadImageBatch(endIndex);
-            }, isMobile ? 500 : 200); // Delay maior no mobile
-        } else {
-            console.log(`✅ ${categoryData.images.length} imagens carregadas para ${category}`);
-        }
+    // Carregamento direto e simples
+    for (let i = 0; i < categoryData.images.length; i++) {
+        const imageName = categoryData.images[i];
+        const imagePath = `imagens/${categoryData.folder}/${imageName}`;
+        createImageItem(gallery, imagePath, i + 1, category, categoryData);
     }
-    
-    // Iniciar carregamento do primeiro lote
-    loadImageBatch(0);
 }
 
-// Criar item de imagem com otimização para mobile
+// Criar item de imagem SIMPLIFICADO para mobile
 function createImageItem(gallery, imagePath, number, category, categoryData) {
     const imageItem = document.createElement('div');
-    imageItem.className = 'image-item loading';
-    
-    // Criar placeholder de carregamento
-    const loadingPlaceholder = document.createElement('div');
-    loadingPlaceholder.className = 'image-loading-placeholder';
-    loadingPlaceholder.innerHTML = `
-        <div class="loading-spinner"></div>
-        <p>Cargando imagen ${number}...</p>
-    `;
-    imageItem.appendChild(loadingPlaceholder);
+    imageItem.className = 'image-item';
     
     const img = document.createElement('img');
     img.alt = `${category} - Imagem ${number}`;
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.style.display = 'none';
-    
-    // Otimização para mobile: adicionar sizes para responsive images
-    img.sizes = '(max-width: 480px) 100vw, (max-width: 768px) 90vw, 700px';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.display = 'block';
     
     // Extrair nome do arquivo do caminho
     const imageName = imagePath.split('/').pop();
     
-    // Timeout para evitar carregamento infinito
-    const loadingTimeout = setTimeout(() => {
-        if (imageItem.classList.contains('loading')) {
-            console.warn(`⏰ Timeout ao carregar imagem: ${imagePath}`);
-            imageItem.classList.remove('loading');
-            imageItem.classList.add('error');
-            imageItem.innerHTML = `
-                <div class="image-placeholder error">
-                    <i class="fas fa-clock"></i>
-                    <p>Timeout al cargar imagen ${number}</p>
-                    <small>La imagen tardó demasiado en cargar</small>
-                    <button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px; background: var(--deep-red); color: white; border: none; border-radius: 5px; cursor: pointer;">Recargar página</button>
-                </div>
-            `;
-        }
-    }, 10000); // 10 segundos de timeout
-    
-    // Tratar erro de carregamento
+    // Tratar erro de carregamento - SIMPLES
     img.onerror = function() {
-        clearTimeout(loadingTimeout);
-        console.error(`❌ Erro ao carregar imagem: ${imagePath}`);
-        console.error(`🔍 Categoria: ${category}, Pasta: ${categoryData.folder}, Arquivo: ${imageName}`);
-        console.error(`📁 Caminho completo: ${window.location.origin}/${imagePath}`);
-        
-        imageItem.classList.remove('loading');
-        imageItem.classList.add('error');
         imageItem.innerHTML = `
-            <div class="image-placeholder error">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Error al cargar imagen ${number}</p>
-                <small>Archivo: ${imageName}</small>
-                <small>Ruta: ${imagePath}</small>
-                <button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px; background: var(--deep-red); color: white; border: none; border-radius: 5px; cursor: pointer;">Recargar página</button>
+            <div class="image-placeholder error" style="padding: 20px; text-align: center; background: #f8d7da; color: #721c24; border-radius: 10px;">
+                <p>❌ Error: ${imageName}</p>
             </div>
         `;
     };
     
-    // Tratar sucesso no carregamento
+    // Tratar sucesso - SIMPLES
     img.onload = function() {
-        clearTimeout(loadingTimeout);
-        console.log(`✅ Imagem carregada com sucesso: ${imagePath}`);
-        imageItem.classList.remove('loading');
         imageItem.classList.add('loaded');
-        loadingPlaceholder.remove();
-        img.style.display = 'block';
-        
-        // Adicionar fade-in suave
-        img.style.opacity = '0';
-        img.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => {
-            img.style.opacity = '1';
-        }, 50);
     };
     
-    // Definir src depois de configurar os handlers
-    console.log(`🔄 Tentando carregar: ${imagePath}`);
+    // Definir src - DIRETO
     img.src = imagePath;
     
     imageItem.appendChild(img);
     gallery.appendChild(imageItem);
 }
 
-// Função para testar se uma imagem existe
-function testImageExists(imagePath) {
-    return new Promise((resolve) => {
-        const testImg = new Image();
-        testImg.onload = () => resolve(true);
-        testImg.onerror = () => resolve(false);
-        testImg.src = imagePath;
-    });
+// Função simplificada para mobile - sem Promise complexa
+function testImageExists(imagePath, callback) {
+    const testImg = new Image();
+    testImg.onload = function() { callback(true); };
+    testImg.onerror = function() { callback(false); };
+    testImg.src = imagePath;
 }
 
 // Criar item de erro quando imagem não existe
