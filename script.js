@@ -6,7 +6,7 @@ const categories = {
     },
     'iluminacion': {
         folder: 'ILUMINACIÓN',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'soldaditos': {
         folder: 'SOLDADITOS Y CASCANUECES',
@@ -17,12 +17,12 @@ const categories = {
         images: ['1.png', '2.png', '3.png', '4.png']
     },
     'mesa-puesta': {
-        folder: 'MESA PUESTA',
+        folder: 'MESA PUESTA', // Usando MESA PUESTA que tem 14 imagens
         images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png']
     },
     'cajas': {
         folder: 'CAJAS',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'arboles': {
         folder: 'ARBOLES',
@@ -34,35 +34,35 @@ const categories = {
     },
     'bolas': {
         folder: 'BOLAS',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'cintas': {
         folder: 'CINTAS',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'acabados': {
         folder: 'ACABADOS',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'ositos': {
         folder: 'OSITOS Y MUNECOS',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'papa-noel': {
         folder: 'PAPA NOEL',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'colgantes': {
         folder: 'DECORACION',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'pesebres': {
         folder: 'PESEBRES Y ANGELES',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     },
     'flores': {
         folder: 'FLORES',
-        images: [] // Agregar imágenes cuando estén disponibles
+        images: [] // Pasta vazia - mostrar estado vazio
     }
 };
 
@@ -71,6 +71,14 @@ let currentCategory = 'home';
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎄 Magnific Decor iniciado!');
+    console.log('📁 Verificando estrutura de pastas...');
+    
+    // Log da estrutura esperada
+    Object.keys(categories).forEach(key => {
+        const cat = categories[key];
+        console.log(`📂 ${key}: pasta="${cat.folder}", imagens=${cat.images.length}`);
+    });
+    
     setupNavigation();
     setupHomeCards();
     setupScrollEffect();
@@ -138,24 +146,33 @@ function showSection(category) {
 
 // Carregar imagens da categoria com carregamento progressivo
 function loadCategoryImages(category) {
+    console.log(`🎯 Iniciando carregamento para categoria: ${category}`);
+    
     const categoryData = categories[category];
     if (!categoryData) {
-        console.log(`❌ Categoria não encontrada: ${category}`);
+        console.error(`❌ Categoria não encontrada: ${category}`);
+        console.error(`📋 Categorias disponíveis:`, Object.keys(categories));
         return;
     }
     
+    console.log(`📁 Pasta da categoria: ${categoryData.folder}`);
+    console.log(`🖼️ Número de imagens: ${categoryData.images.length}`);
+    
     const gallery = document.getElementById(`${category}-gallery`);
     if (!gallery) {
-        console.log(`❌ Gallery não encontrada: ${category}-gallery`);
+        console.error(`❌ Gallery não encontrada: ${category}-gallery`);
         return;
     }
     
     gallery.innerHTML = '';
     
     if (categoryData.images.length === 0) {
+        console.log(`⚠️ Categoria ${category} não tem imagens - mostrando estado vazio`);
         showEmptyState(gallery, category);
         return;
     }
+    
+    console.log(`🚀 Iniciando carregamento de ${categoryData.images.length} imagens para ${category}`);
     
     // Carregamento progressivo para melhor performance no mobile
     const isMobile = window.innerWidth <= 768;
@@ -167,7 +184,18 @@ function loadCategoryImages(category) {
         for (let i = startIndex; i < endIndex; i++) {
             const imageName = categoryData.images[i];
             const imagePath = `imagens/${categoryData.folder}/${imageName}`;
-            createImageItem(gallery, imagePath, i + 1, category);
+            console.log(`🔄 Carregando imagem ${i + 1}/${categoryData.images.length}: ${imagePath}`);
+            
+            // Testar se a imagem existe antes de criar o item
+            testImageExists(imagePath).then(exists => {
+                if (exists) {
+                    console.log(`✅ Imagem encontrada: ${imagePath}`);
+                    createImageItem(gallery, imagePath, i + 1, category, categoryData);
+                } else {
+                    console.warn(`⚠️ Imagem não encontrada: ${imagePath}`);
+                    createErrorItem(gallery, imagePath, i + 1, category, `Archivo no encontrado: ${imageName}`);
+                }
+            });
         }
         
         // Se ainda há imagens para carregar, carrega o próximo lote após um delay
@@ -185,7 +213,7 @@ function loadCategoryImages(category) {
 }
 
 // Criar item de imagem com otimização para mobile
-function createImageItem(gallery, imagePath, number, category) {
+function createImageItem(gallery, imagePath, number, category, categoryData) {
     const imageItem = document.createElement('div');
     imageItem.className = 'image-item loading';
     
@@ -207,26 +235,50 @@ function createImageItem(gallery, imagePath, number, category) {
     // Otimização para mobile: adicionar sizes para responsive images
     img.sizes = '(max-width: 480px) 100vw, (max-width: 768px) 90vw, 700px';
     
-    // Caminho otimizado para deploy
-    img.src = imagePath;
+    // Extrair nome do arquivo do caminho
+    const imageName = imagePath.split('/').pop();
+    
+    // Timeout para evitar carregamento infinito
+    const loadingTimeout = setTimeout(() => {
+        if (imageItem.classList.contains('loading')) {
+            console.warn(`⏰ Timeout ao carregar imagem: ${imagePath}`);
+            imageItem.classList.remove('loading');
+            imageItem.classList.add('error');
+            imageItem.innerHTML = `
+                <div class="image-placeholder error">
+                    <i class="fas fa-clock"></i>
+                    <p>Timeout al cargar imagen ${number}</p>
+                    <small>La imagen tardó demasiado en cargar</small>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px; background: var(--deep-red); color: white; border: none; border-radius: 5px; cursor: pointer;">Recargar página</button>
+                </div>
+            `;
+        }
+    }, 10000); // 10 segundos de timeout
     
     // Tratar erro de carregamento
     img.onerror = function() {
-        console.log(`❌ Erro ao carregar: ${imagePath}`);
+        clearTimeout(loadingTimeout);
+        console.error(`❌ Erro ao carregar imagem: ${imagePath}`);
+        console.error(`🔍 Categoria: ${category}, Pasta: ${categoryData.folder}, Arquivo: ${imageName}`);
+        console.error(`📁 Caminho completo: ${window.location.origin}/${imagePath}`);
+        
         imageItem.classList.remove('loading');
         imageItem.classList.add('error');
         imageItem.innerHTML = `
             <div class="image-placeholder error">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>Error al cargar imagen ${number}</p>
-                <small>Intenta recargar la página</small>
+                <small>Archivo: ${imageName}</small>
+                <small>Ruta: ${imagePath}</small>
+                <button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px; background: var(--deep-red); color: white; border: none; border-radius: 5px; cursor: pointer;">Recargar página</button>
             </div>
         `;
     };
     
     // Tratar sucesso no carregamento
     img.onload = function() {
-        console.log(`✅ Imagem carregada: ${imagePath}`);
+        clearTimeout(loadingTimeout);
+        console.log(`✅ Imagem carregada com sucesso: ${imagePath}`);
         imageItem.classList.remove('loading');
         imageItem.classList.add('loaded');
         loadingPlaceholder.remove();
@@ -240,8 +292,37 @@ function createImageItem(gallery, imagePath, number, category) {
         }, 50);
     };
     
+    // Definir src depois de configurar os handlers
+    console.log(`🔄 Tentando carregar: ${imagePath}`);
+    img.src = imagePath;
+    
     imageItem.appendChild(img);
     gallery.appendChild(imageItem);
+}
+
+// Função para testar se uma imagem existe
+function testImageExists(imagePath) {
+    return new Promise((resolve) => {
+        const testImg = new Image();
+        testImg.onload = () => resolve(true);
+        testImg.onerror = () => resolve(false);
+        testImg.src = imagePath;
+    });
+}
+
+// Criar item de erro quando imagem não existe
+function createErrorItem(gallery, imagePath, number, category, errorMessage) {
+    const errorItem = document.createElement('div');
+    errorItem.className = 'image-item error';
+    errorItem.innerHTML = `
+        <div class="image-placeholder error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error: Imagen ${number} no encontrada</p>
+            <small>${errorMessage}</small>
+            <small>Ruta: ${imagePath}</small>
+        </div>
+    `;
+    gallery.appendChild(errorItem);
 }
 
 // Mostrar estado vacío

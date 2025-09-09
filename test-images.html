@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Imagens - Magnific Decor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        img {
+            max-width: 200px;
+            max-height: 150px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Carregamento de Imagens</h1>
+    <p>Testando se todas as imagens existem nos caminhos corretos...</p>
+    
+    <div id="results"></div>
+
+    <script>
+        // Usar a mesma estrutura do script principal
+        const categories = {
+            'velas': {
+                folder: 'VELAS',
+                images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png']
+            },
+            'soldaditos': {
+                folder: 'SOLDADITOS Y CASCANUECES',
+                images: ['1.png', '2.png', '3.png']
+            },
+            'farolitos': {
+                folder: 'FAROLITOS Y BOLAS DE NIEVE',
+                images: ['1.png', '2.png', '3.png', '4.png']
+            },
+            'mesa-puesta': {
+                folder: 'MESA PUESTA',
+                images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png']
+            },
+            'arboles': {
+                folder: 'ARBOLES',
+                images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '25.png']
+            },
+            'fundas': {
+                folder: 'FUNDAS PARA ALMOHADONES',
+                images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png']
+            }
+        };
+
+        const resultsDiv = document.getElementById('results');
+        let totalImages = 0;
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Contar total de imagens
+        Object.values(categories).forEach(cat => {
+            totalImages += cat.images.length;
+        });
+
+        console.log(`🧪 Iniciando teste de ${totalImages} imagens`);
+
+        // Função para testar uma imagem
+        function testImage(imagePath, categoryName, imageName) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const startTime = Date.now();
+                
+                img.onload = function() {
+                    const loadTime = Date.now() - startTime;
+                    successCount++;
+                    
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>${categoryName}/${imageName}</strong> - Carregada em ${loadTime}ms
+                        <br><img src="${imagePath}" alt="${imageName}">
+                    `;
+                    resultsDiv.appendChild(resultDiv);
+                    
+                    console.log(`✅ ${imagePath} - OK (${loadTime}ms)`);
+                    resolve(true);
+                };
+                
+                img.onerror = function() {
+                    const loadTime = Date.now() - startTime;
+                    errorCount++;
+                    
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `
+                        ❌ <strong>${categoryName}/${imageName}</strong> - ERRO após ${loadTime}ms
+                        <br>Caminho: ${imagePath}
+                    `;
+                    resultsDiv.appendChild(resultDiv);
+                    
+                    console.error(`❌ ${imagePath} - ERRO (${loadTime}ms)`);
+                    resolve(false);
+                };
+
+                // Timeout de 5 segundos
+                setTimeout(() => {
+                    if (!img.complete) {
+                        errorCount++;
+                        
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'test-result error';
+                        resultDiv.innerHTML = `
+                            ⏰ <strong>${categoryName}/${imageName}</strong> - TIMEOUT
+                            <br>Caminho: ${imagePath}
+                        `;
+                        resultsDiv.appendChild(resultDiv);
+                        
+                        console.error(`⏰ ${imagePath} - TIMEOUT`);
+                        resolve(false);
+                    }
+                }, 5000);
+                
+                img.src = imagePath;
+            });
+        }
+
+        // Testar todas as imagens
+        async function testAllImages() {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'test-result loading';
+            statusDiv.innerHTML = `🔄 Testando ${totalImages} imagens...`;
+            resultsDiv.appendChild(statusDiv);
+
+            for (const [categoryKey, categoryData] of Object.entries(categories)) {
+                console.log(`📂 Testando categoria: ${categoryKey} (${categoryData.images.length} imagens)`);
+                
+                for (const imageName of categoryData.images) {
+                    const imagePath = `imagens/${categoryData.folder}/${imageName}`;
+                    await testImage(imagePath, categoryKey, imageName);
+                }
+            }
+
+            // Remover status de carregamento
+            statusDiv.remove();
+
+            // Mostrar resumo final
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'test-result ' + (errorCount > 0 ? 'error' : 'success');
+            summaryDiv.innerHTML = `
+                <h3>📊 Resumo do Teste</h3>
+                <p>✅ <strong>${successCount}</strong> imagens carregadas com sucesso</p>
+                <p>❌ <strong>${errorCount}</strong> imagens com erro</p>
+                <p>📈 <strong>${Math.round((successCount/totalImages)*100)}%</strong> de sucesso</p>
+            `;
+            resultsDiv.insertBefore(summaryDiv, resultsDiv.firstChild);
+
+            console.log(`📊 Teste concluído: ${successCount}/${totalImages} (${Math.round((successCount/totalImages)*100)}%)`);
+        }
+
+        // Iniciar teste quando a página carregar
+        window.addEventListener('load', testAllImages);
+    </script>
+</body>
+</html>
