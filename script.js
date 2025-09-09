@@ -1,4 +1,4 @@
-// TODAS AS CATEGORIAS COM IMAGENS ATUALIZADAS
+// CATEGORIAS COM FALLBACK AUTOMÁTICO PARA GITHUB PAGES
 const categories = {
     'velas': {
         folder: 'VELAS',
@@ -135,7 +135,7 @@ function showSection(category) {
     }
 }
 
-// CARREGAMENTO DE IMAGENS COM SLOTS EXTRAS
+// CARREGAMENTO DE IMAGENS COM FALLBACK PARA GITHUB PAGES
 function loadCategoryImages(category) {
     const categoryData = categories[category];
     if (!categoryData) return;
@@ -150,11 +150,10 @@ function loadCategoryImages(category) {
         return;
     }
     
-    // Criar imagens existentes
+    // Criar imagens existentes com fallback para diferentes formatos
     for (let i = 0; i < categoryData.images.length; i++) {
         const imageName = categoryData.images[i];
-        const imagePath = 'imagens/' + categoryData.folder + '/' + imageName;
-        createImageItem(gallery, imagePath, i + 1, imageName);
+        createImageItemWithFallback(gallery, categoryData.folder, imageName, i + 1);
     }
     
     // Adicionar slots vazios para futuras imagens (5 slots extras)
@@ -184,6 +183,55 @@ function createImageItem(gallery, imagePath, number, imageName) {
     
     div.appendChild(img);
     gallery.appendChild(div);
+}
+
+// CRIAR IMAGEM COM FALLBACK PARA GITHUB PAGES
+function createImageItemWithFallback(gallery, folderName, imageName, number) {
+    const div = document.createElement('div');
+    div.className = 'image-item';
+    
+    const img = document.createElement('img');
+    img.alt = 'Imagen ' + number;
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    
+    // Lista de possíveis formatos de URL para testar
+    const possiblePaths = [
+        'imagens/' + folderName + '/' + imageName, // Formato original
+        'imagens/' + encodeURIComponent(folderName) + '/' + imageName, // URL encoded
+        'imagens/' + folderName.replace(/\s+/g, '%20') + '/' + imageName, // Espaços como %20
+        'imagens/' + folderName.replace(/\s+/g, '_') + '/' + imageName, // Espaços como underscore
+        'imagens/' + folderName.replace(/\s+/g, '-') + '/' + imageName, // Espaços como hífen
+        'imagens/' + folderName.replace(/Ñ/g, 'N').replace(/ñ/g, 'n') + '/' + imageName // Sem ñ
+    ];
+    
+    let currentPathIndex = 0;
+    
+    function tryNextPath() {
+        if (currentPathIndex >= possiblePaths.length) {
+            // Se todos os caminhos falharam, mostrar erro
+            div.innerHTML = '<div style="padding:20px;text-align:center;background:#f8d7da;color:#721c24;border-radius:10px;">❌ Error: ' + imageName + '</div>';
+            return;
+        }
+        
+        img.src = possiblePaths[currentPathIndex];
+        currentPathIndex++;
+    }
+    
+    img.onerror = function() {
+        tryNextPath();
+    };
+    
+    img.onload = function() {
+        // Sucesso! Imagem carregada
+    };
+    
+    div.appendChild(img);
+    gallery.appendChild(div);
+    
+    // Começar tentando o primeiro caminho
+    tryNextPath();
 }
 
 // CRIAR SLOT VAZIO PARA FUTURAS IMAGENS
