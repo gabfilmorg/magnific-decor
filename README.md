@@ -57,7 +57,7 @@ Sitio web responsivo para visualización de catálogos de decoraciones navideña
 8. **Fundas para Almohadones** ⏳ (listo para imágenes)
 9. **Bolas** ⏳ (listo para imágenes)
 10. **Cintas** ⏳ (listo para imágenes)
-11. **Acabados** ⏳ (listo para imágenes)
+11. **Acabados y Lazos** ⏳ (listo para imágenes)
 12. **Ositos y Muñecos** ⏳ (listo para imágenes)
 13. **Papá Noel** ⏳ (listo para imágenes)
 14. **Colgantes y Decoración** ⏳ (listo para imágenes)
