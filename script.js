@@ -22,7 +22,7 @@ const categories = {
     },
     'cajas': {
         folder: 'CAJAS',
-        images: ['176.png', '177.png', '178.png', '179.png', '180.png', '181.png', '182.png', '183.png']
+        images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png']
     },
     'arboles': {
         folder: 'ARBOLES',
